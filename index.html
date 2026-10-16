@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="author" content="funkjun">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="data:,">
+<title>代码题库 · 面试提词大屏</title>
+<style>
+:root {
+  color-scheme: dark;
+  --ui: 1px;
+  --bg: #000000;
+  --panel: #07090c;
+  --rule: #252a31;
+  --ink: #f1f4f8;
+  --muted: #abb4c0;
+  --blue: #91d7ff;
+  --green: #c2e6a1;
+  --purple: #d4b8ff;
+  --amber: #ffd091;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: var(--bg); }
+body { color: var(--ink); font-family: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", sans-serif; }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+.screen {
+  height: 100dvh; padding: calc(12 * var(--ui)) calc(16 * var(--ui)) calc(8 * var(--ui));
+  display: grid; grid-template-rows: calc(36 * var(--ui)) minmax(0, 1fr) calc(24 * var(--ui)); gap: calc(8 * var(--ui));
+}
+.toolbar { display: flex; align-items: center; gap: calc(20 * var(--ui)); min-width: 0; }
+h1 { margin: 0; font-size: calc(17 * var(--ui)); font-weight: 650; white-space: nowrap; letter-spacing: .02em; }
+.subject { color: var(--blue); font-family: Consolas, monospace; font-weight: 700; padding-right: calc(9 * var(--ui)); }
+.views { display: flex; align-items: center; gap: calc(5 * var(--ui)); }
+.view, .fullscreen {
+  background: transparent; border: 1px solid var(--rule); border-radius: calc(4 * var(--ui));
+  padding: calc(5 * var(--ui)) calc(11 * var(--ui)); font-size: calc(12 * var(--ui)); line-height: 1.2; white-space: nowrap;
+}
+.view:hover, .fullscreen:hover { border-color: #6c7e92; }
+.view[aria-pressed="true"] { color: var(--blue); background: #13212b; border-color: #44687f; }
+.fullscreen { margin-left: auto; }
+.board { min-height: 0; display: grid; grid-template-columns: repeat(6, minmax(0,1fr)); grid-template-rows: 1.08fr 1fr; gap: calc(10 * var(--ui)); }
+.question { display: flex; flex-direction: column; min-width: 0; min-height: 0; border: 1px solid var(--rule); background: var(--panel); border-radius: calc(5 * var(--ui)); overflow: hidden; }
+.q1, .q2, .q3 { grid-column: span 2; }
+.q4, .q5 { grid-column: span 3; }
+.question-head { padding: calc(11 * var(--ui)) calc(14 * var(--ui)) calc(9 * var(--ui)); border-bottom: 1px solid #1a2027; flex: none; }
+.title-row { display: flex; align-items: center; gap: calc(10 * var(--ui)); min-height: calc(24 * var(--ui)); }
+.number { color: var(--blue); font-family: Consolas, monospace; font-size: calc(22 * var(--ui)); font-weight: 700; line-height: 1; }
+h2 { margin: 0; font-size: calc(17 * var(--ui)); font-weight: 650; letter-spacing: .015em; line-height: 1.35; }
+.expand { margin-left: auto; padding: 0 calc(4 * var(--ui)); border: 0; background: none; color: #8c9cad; font-size: calc(20 * var(--ui)); line-height: 1; }
+.expand:hover { color: var(--blue); }
+.summary { margin: calc(6 * var(--ui)) 0 0; color: var(--muted); font-size: calc(12 * var(--ui)); line-height: 1.5; white-space: nowrap; }
+.code-area { min-height: 0; flex: 1; overflow: hidden; padding: calc(10 * var(--ui)) calc(12 * var(--ui)); }
+.code { display: block; margin: 0; width: max-content; font-family: Consolas, "Cascadia Mono", "SFMono-Regular", "Liberation Mono", "Microsoft YaHei", monospace; font-weight: 500; font-variant-ligatures: none; line-height: 1.26; tab-size: 4; }
+.code code { display: block; font: inherit; }
+.line { display: flex; min-height: 1.26em; white-space: pre; }
+.ln { display: inline-block; width: 2.1em; padding-right: .8em; flex: none; color: #677482; text-align: right; font-size: .76em; line-height: 1.6579; user-select: none; }
+.text { display: inline-block; }
+.k, .kn, .kd, .kc, .ow { color: var(--purple); font-weight: 600; }
+.nf, .nc, .nn { color: var(--blue); }
+.nb { color: #acd9f3; }
+.s, .s1, .s2, .sa, .sb, .sc, .sd, .se, .sh, .si, .sr, .ss { color: var(--green); }
+.mi, .mf, .mh, .mo, .il { color: var(--amber); }
+.c, .c1, .cm, .cp, .cs { color: #9ba7b4; font-style: normal; }
+.o, .p { color: #e1e7ef; }
+.nd { color: var(--amber); }
+.footer { display: flex; align-items: center; justify-content: space-between; gap: calc(16 * var(--ui)); color: #9aa7b6; font-size: calc(11 * var(--ui)); white-space: nowrap; }
+.footer strong { font-weight: 500; color: #d5dce5; }
+kbd { font-family: Consolas, monospace; color: #d5dce5; }
+.legend { display: flex; gap: calc(12 * var(--ui)); }
+.legend span:nth-child(1) { color: var(--purple); }
+.legend span:nth-child(2) { color: var(--blue); }
+.legend span:nth-child(3) { color: var(--green); }
+.legend span:nth-child(4) { color: #9ba7b4; }
+.notice { position: fixed; left: 50%; bottom: 5%; transform: translateX(-50%); padding: 12px 20px; background: #15202b; border: 1px solid #405366; border-radius: 6px; font-size: 15px; z-index: 2; }
+.notice[hidden] { display: none; }
+@media (max-aspect-ratio: 1/1) {
+  .toolbar { flex-wrap: wrap; gap: 6px; }
+  .screen { grid-template-rows: calc(70 * var(--ui)) minmax(0,1fr) calc(30 * var(--ui)); }
+  .views { order: 3; width: 100%; justify-content: space-between; }
+  .view { padding: 4px 7px; }
+  .board { grid-template-columns: repeat(2, minmax(0,1fr)); grid-template-rows: repeat(3,minmax(0,1fr)); }
+  .q1,.q2,.q3,.q4 { grid-column: span 1; }
+  .q5 { grid-column: span 2; }
+  h2 { font-size: calc(13 * var(--ui)); }
+  .summary { font-size: calc(9 * var(--ui)); white-space: normal; }
+  .question-head { padding: calc(7 * var(--ui)); }
+  .title-row { gap: 6px; }
+  .number { font-size: calc(18 * var(--ui)); }
+  .footer .legend { display: none; }
+  .footer { font-size: 9px; flex-wrap: wrap; gap: 1px; align-content: center; }
+}
+.question[hidden] { display: none; }
+.board[data-count="1"] { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); }
+.board[data-count="2"] { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: minmax(0, 1fr); }
+.board[data-count="3"] { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: minmax(0, 1fr); }
+.board[data-count="4"] { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); }
+.board:not([data-count="5"]) .question { grid-column: auto; }
+.board[data-count="1"] .question-head { padding: calc(14 * var(--ui)) calc(22 * var(--ui)); }
+.board[data-count="1"] h2 { font-size: calc(22 * var(--ui)); }
+.board[data-count="1"] .code-area { padding: calc(15 * var(--ui)) calc(22 * var(--ui)); }
+.board[data-count="1"] .expand { display: none; }
+</style>
+</head>
+<body>
+<main class="screen">
+  <header class="toolbar">
+    <h1><span class="subject">Python</span>应用开发 · 5 题</h1>
+    <nav class="views" aria-label="选择题目，可多选" title="点击选择题目，再次点击取消；未选择时显示全部">
+      <button class="view" data-focus="0" aria-pressed="true">全部 <kbd>0</kbd></button>
+      <button class="view" data-focus="1" aria-pressed="false">1 配置</button>
+      <button class="view" data-focus="2" aria-pressed="false">2 索引</button>
+      <button class="view" data-focus="3" aria-pressed="false">3 检索</button>
+      <button class="view" data-focus="4" aria-pressed="false">4 问答</button>
+      <button class="view" data-focus="5" aria-pressed="false">5 接口</button>
+    </nav>
+    <button class="fullscreen" id="fullscreen" title="F：切换全屏">全屏 <kbd>F</kbd></button>
+  </header>
+  <div class="board" id="board" data-count="5">
+    <section class="question q1" data-question="1" aria-labelledby="title-1">
+      <header class="question-head">
+        <div class="title-row"><span class="number">01</span><h2 id="title-1">加载配置文件和环境变量</h2>
+          <button class="expand" data-only="1" aria-label="仅显示第 1 题" title="仅显示第 1 题">↗</button></div>
+        <p class="summary">读取 .env → 写入环境变量 → 默认值 → 打印配置</p>
+      </header>
+      <div class="code-area"><pre class="code" aria-label="第 1 题完整 Python 代码"><code><span class="line"><span class="ln" aria-hidden="true">01</span><span class="text"><span class="kn">import</span><span class="w"> </span><span class="nn">os</span></span></span><span class="line"><span class="ln" aria-hidden="true">02</span><span class="text"> </span></span><span class="line"><span class="ln" aria-hidden="true">03</span><span class="text"><span class="k">def</span><span class="w"> </span><span class="nf">load_config</span><span class="p">():</span></span></span><span class="line"><span class="ln" aria-hidden="true">04</span><span class="text">    <span class="c1"># 读取 .env 文件</span></span></span><span class="line"><span class="ln" aria-hidden="true">05</span><span class="text">    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">&quot;.env&quot;</span><span class="p">):</span></span></span><span class="line"><span class="ln" aria-hidden="true">06</span><span class="text">        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;.env&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span></span></span><span class="line"><span class="ln" aria-hidden="true">07</span><span class="text">            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span></span></span><span class="line"><span class="ln" aria-hidden="true">08</span><span class="text">                <span class="k">if</span> <span class="s2">&quot;=&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span></span></span><span class="line"><span class="ln" aria-hidden="true">09</span><span class="text">                    <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span></span></span><span class="line"><span class="ln" aria-hidden="true">10</span><span class="text">                    <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span></span></span><span class="line"><span class="ln" aria-hidden="true">11</span><span class="text"> </span></span><span class="line"><span class="ln" aria-hidden="true">12</span><span class="text">    <span class="n">config</span> <span class="o">=</span> <span class="p">{</span></span></span><span class="line"><span class="ln" aria-hidden="true">13</span><span class="text">        <span class="s2">&quot;OPENAI_API_KEY&quot;</span><span class="p">:</span></span></span><span class="line"><span class="ln" aria-hidden="true">14</span><span class="text">            <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;OPENAI_API_KEY&quot;</span><span class="p">,</span> <span class="s2">&quot;sk-xxxxxx&quot;</span><span class="p">),</span></span></span><span class="line"><span class="ln" aria-hidden="true">15</span><span class="text">        <span class="s2">&quot;VECTOR_DB_PATH&quot;</span><span class="p">:</span></span></span><span class="line"><span class="ln" aria-hidden="true">16</span><span class="text">            <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;VECTOR_DB_PATH&quot;</span><span class="p">,</span> <span class="s2">&quot;data/vector_store&quot;</span><span class="p">)</span></span></span><span class="line"><span class="ln" aria-hidden="true">17</span><span class="text">    <span class="p">}</span></span></span><span class="line"><span class="ln" aria-hidden="true">18</span><span class="text">    <span class="k">return</span> <span class="n">config</span></span></span><span class="line"><span class="ln" aria-hidden="true">19</span><span class="text"> </span></span><span class="line"><span class="ln" aria-hidden="true">20</span><span class="text"><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span></span></span><span class="line"><span class="ln" aria-hidden="true">21</span><span class="text">    <span class="n">cfg</span> <span class="o">=</span> <span class="n">load_config</span><span class="p">()</span></span></span><span class="line"><span class="ln" aria-hidden="true">22</span><span class="text">    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;当前配置：&quot;</span><span class="p">,</span> <span class="n">cfg</span><span class="p">)</span></span></span></code></pre></div>
+    </section>
+
+    <section class="question q2" data-question="2" aria-labelledby="title-2">
+      <header class="question-head">
+        <div class="title-row"><span class="number">02</span><h2 id="title-2">构建简单的向量索引</h2>
+          <button class="expand" data-only="2" aria-label="仅显示第 2 题" title="仅显示第 2 题">↗</button></div>
+        <p class="summary">读取 txt → Document → Embeddings → FAISS → 保存</p>
+      </header>
+      <div class="code-area"><pre class="code" aria-label="第 2 题完整 Python 代码"><code><span class="line"><span class="ln" aria-hidden="true">01</span><span class="text"><span class="kn">import</span><span class="w"> </span><span class="nn">os</span></span></span><span class="line"><span class="ln" aria-hidden="true">02</span><span class="text"><span class="kn">from</span><span class="w"> </span><span class="nn">langchain_community.vectorstores</span><span class="w"> </span><span class="kn">import</span> <span class="n">FAISS</span></span></span><span class="line"><span class="ln" aria-hidden="true">03</span><span class="text"><span class="kn">from</span><span class="w"> </span><span class="nn">langchain_openai</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpenAIEmbeddings</span></span></span><span class="line"><span class="ln" aria-hidden="true">04</span><span class="text"><span class="kn">from</span><span class="w"> </span><span class="nn">langchain.schema</span><span class="w"> </span><span class="kn">import</span> <span class="n">Document</span></span></span><span class="line"><span class="ln" aria-hidden="true">05</span><span class="text"> </span></span><span class="line"><span class="ln" aria-hidden="true">06</span><span class="text"><span class="k">def</span><span class="w"> </span><span class="nf">build_index</span><span class="p">(</span><span class="n">input_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span></span></span><span class="line"><span class="ln" aria-hidden="true">07</span><span class="text">    <span class="n">docs</span> <span class="o">=</span> <span class="p">[]</span></span></span><span class="line"><span class="ln" aria-hidden="true">08</span><span class="text">    <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">input_dir</span><span class="p">):</span></span></span><span class="line"><span class="ln" aria-hidden="true">09</span><span class="text">        <span class="k">if</span> <span class="n">fn</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.txt&quot;</span><span class="p">):</span></span></span><span class="line"><span class="ln" aria-hidden="true">10</span><span class="text">            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">input_dir</span><span class="p">,</span> <span class="n">fn</span><span class="p">),</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span></span></span><span class="line"><span class="ln" aria-hidden="true">11</span><span class="text">                      <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span></span></span><span class="line"><span class="ln" aria-hidden="true">12</span><span class="text">                <span class="n">content</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span></span></span><span class="line"><span class="ln" aria-hidden="true">13</span><span class="text">                <span class="n">docs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Document</span><span class="p">(</span></span></span><span class="line"><span class="ln" aria-hidden="true">14</span><span class="text">                    <span class="n">page_content</span><span class="o">=</span><span class="n">content</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="n">fn</span><span class="p">}</span></span></span><span class="line"><span class="ln" aria-hidden="true">15</span><span class="text">                <span class="p">))</span></span></span><span class="line"><span class="ln" aria-hidden="true">16</span><span class="text">    <span class="k">if</span> <span class="ow">not</span> <span class="n">docs</span><span class="p">:</span></span></span><span class="line"><span class="ln" aria-hidden="true">17</span><span class="text">        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;⚠️ 没有找到 txt 文件&quot;</span><span class="p">)</span></span></span><span class="line"><span class="ln" aria-hidden="true">18</span><span class="text">        <span class="k">return</span></span></span><span class="line"><span class="ln" aria-hidden="true">19</span><span class="text">    <span class="n">embeddings</span> <span class="o">=</span> <span class="n">OpenAIEmbeddings</span><span class="p">()</span></span></span><span class="line"><span class="ln" aria-hidden="true">20</span><span class="text">    <span class="n">store</span> <span class="o">=</span> <span class="n">FAISS</span><span class="o">.</span><span class="n">from_documents</span><span class="p">(</span><span class="n">docs</span><span class="p">,</span> <span class="n">embeddings</span><span class="p">)</span></span></span><span class="line"><span class="ln" aria-hidden="true">21</span><span class="text">    <span class="n">store</span><span class="o">.</span><span class="n">save_local</span><span class="p">(</span><span class="n">output_dir</span><span class="p">)</span></span></span><span class="line"><span class="ln" aria-hidden="true">22</span><span class="text">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ 索引已保存到 </span><span class="si">{</span><span class="n">output_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></span></span><span class="line"><span class="ln" aria-hidden="true">23</span><span class="text"> </span></span><span class="line"><span class="ln" aria-hidden="true">24</span><span class="text"><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span></span></span><span class="line"><span class="ln" aria-hidden="true">25</span><span class="text">    <span class="n">build_index</span><span class="p">(</span><span class="s2">&quot;data/reports&quot;</span><span class="p">,</span> <span class="s2">&quot;data/vector_store&quot;</span><span class="p">)</span></span></span></code></pre></div>
+    </section>
+
+    <section class="question q3" data-question="3" aria-labelledby="title-3">
+      <header class="question-head">
+        <div class="title-row"><span class="number">03</span><h2 id="title-3">检索最相关片段</h2>
+          <button class="expand" data-only="3" aria-label="仅显示第 3 题" title="仅显示第 3 题">↗</button></div>
+        <p class="summary">加载索引 → similarity_search(k=3) → 打印来源</p>
+      </header>
+      <div class="code-area"><pre class="code" aria-label="第 3 题完整 Python 代码"><code><span class="line"><span class="ln" aria-hidden="true">01</span><span class="text"><span class="kn">from</span><span class="w"> </span><span class="nn">langchain_community.vectorstores</span><span class="w"> </span><span class="kn">import</span> <span class="n">FAISS</span></span></span><span class="line"><span class="ln" aria-hidden="true">02</span><span class="text"><span class="kn">from</span><span class="w"> </span><span class="nn">langchain_openai</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpenAIEmbeddings</span></span></span><span class="line"><span class="ln" aria-hidden="true">03</span><span class="text"> </span></span><span class="line"><span class="ln" aria-hidden="true">04</span><span class="text"><span class="k">def</span><span class="w"> </span><span class="nf">search_index</span><span class="p">(</span><span class="n">question</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">index_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span></span></span><span class="line"><span class="ln" aria-hidden="true">05</span><span class="text">    <span class="n">embeddings</span> <span class="o">=</span> <span class="n">OpenAIEmbeddings</span><span class="p">()</span></span></span><span class="line"><span class="ln" aria-hidden="true">06</span><span class="text">    <span class="n">store</span> <span class="o">=</span> <span class="n">FAISS</span><span class="o">.</span><span class="n">load_local</span><span class="p">(</span></span></span><span class="line"><span class="ln" aria-hidden="true">07</span><span class="text">        <span class="n">index_dir</span><span class="p">,</span> <span class="n">embeddings</span><span class="p">,</span></span></span><span class="line"><span class="ln" aria-hidden="true">08</span><span class="text">        <span class="n">allow_dangerous_deserialization</span><span class="o">=</span><span class="kc">True</span></span></span><span class="line"><span class="ln" aria-hidden="true">09</span><span class="text">    <span class="p">)</span></span></span><span class="line"><span class="ln" aria-hidden="true">10</span><span class="text">    <span class="n">results</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">similarity_search</span><span class="p">(</span><span class="n">question</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span></span></span><span class="line"><span class="ln" aria-hidden="true">11</span><span class="text">    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">doc</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span></span></span><span class="line"><span class="ln" aria-hidden="true">12</span><span class="text">        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;结果 </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2"> 来自文件: &quot;</span></span></span><span class="line"><span class="ln" aria-hidden="true">13</span><span class="text">              <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">doc</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;source&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></span></span><span class="line"><span class="ln" aria-hidden="true">14</span><span class="text">        <span class="c1"># 只打印前 200 字符</span></span></span><span class="line"><span class="ln" aria-hidden="true">15</span><span class="text">        <span class="nb">print</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">page_content</span><span class="p">[:</span><span class="mi">200</span><span class="p">],</span> <span class="s2">&quot;...</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></span></span><span class="line"><span class="ln" aria-hidden="true">16</span><span class="text">    <span class="k">return</span> <span class="n">results</span></span></span><span class="line"><span class="ln" aria-hidden="true">17</span><span class="text"> </span></span><span class="line"><span class="ln" aria-hidden="true">18</span><span class="text"><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span></span></span><span class="line"><span class="ln" aria-hidden="true">19</span><span class="text">    <span class="n">search_index</span><span class="p">(</span><span class="s2">&quot;2023 年净利润是多少？&quot;</span><span class="p">,</span> <span class="s2">&quot;data/vector_store&quot;</span><span class="p">)</span></span></span></code></pre></div>
+    </section>
+
+    <section class="question q4" data-question="4" aria-labelledby="title-4">
+      <header class="question-head">
+        <div class="title-row"><span class="number">04</span><h2 id="title-4">构建最简单的问答函数</h2>
+          <button class="expand" data-only="4" aria-label="仅显示第 4 题" title="仅显示第 4 题">↗</button></div>
+        <p class="summary">检索 → 拼接上下文 → 构造提示词 → 模型生成</p>
+      </header>
+      <div class="code-area"><pre class="code" aria-label="第 4 题完整 Python 代码"><code><span class="line"><span class="ln" aria-hidden="true">01</span><span class="text"><span class="kn">from</span><span class="w"> </span><span class="nn">langchain_openai</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChatOpenAI</span></span></span><span class="line"><span class="ln" aria-hidden="true">02</span><span class="text"><span class="kn">from</span><span class="w"> </span><span class="nn">langchain.prompts</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChatPromptTemplate</span></span></span><span class="line"><span class="ln" aria-hidden="true">03</span><span class="text"><span class="kn">from</span><span class="w"> </span><span class="nn">src.retriever</span><span class="w"> </span><span class="kn">import</span> <span class="n">search_index</span>  <span class="c1"># 复用第 3 题的函数</span></span></span><span class="line"><span class="ln" aria-hidden="true">04</span><span class="text"> </span></span><span class="line"><span class="ln" aria-hidden="true">05</span><span class="text"><span class="k">def</span><span class="w"> </span><span class="nf">answer_question</span><span class="p">(</span><span class="n">question</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">index_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span></span></span><span class="line"><span class="ln" aria-hidden="true">06</span><span class="text">    <span class="n">docs</span> <span class="o">=</span> <span class="n">search_index</span><span class="p">(</span><span class="n">question</span><span class="p">,</span> <span class="n">index_dir</span><span class="p">)</span></span></span><span class="line"><span class="ln" aria-hidden="true">07</span><span class="text">    <span class="n">context</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">d</span><span class="o">.</span><span class="n">page_content</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">docs</span><span class="p">])</span></span></span><span class="line"><span class="ln" aria-hidden="true">08</span><span class="text"> </span></span><span class="line"><span class="ln" aria-hidden="true">09</span><span class="text">    <span class="n">template</span> <span class="o">=</span> <span class="n">ChatPromptTemplate</span><span class="o">.</span><span class="n">from_messages</span><span class="p">([</span></span></span><span class="line"><span class="ln" aria-hidden="true">10</span><span class="text">        <span class="p">(</span><span class="s2">&quot;system&quot;</span><span class="p">,</span> <span class="s2">&quot;你是一个金融分析助手，请用以下内容回答用户问题。&quot;</span><span class="p">),</span></span></span><span class="line"><span class="ln" aria-hidden="true">11</span><span class="text">        <span class="p">(</span><span class="s2">&quot;human&quot;</span><span class="p">,</span> <span class="s2">&quot;问题：</span><span class="si">{question}</span><span class="se">\n</span><span class="s2">上下文：</span><span class="si">{context}</span><span class="se">\n</span><span class="s2">请给出简明的答案。&quot;</span><span class="p">)</span></span></span><span class="line"><span class="ln" aria-hidden="true">12</span><span class="text">    <span class="p">])</span></span></span><span class="line"><span class="ln" aria-hidden="true">13</span><span class="text">    <span class="n">messages</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">format_messages</span><span class="p">(</span><span class="n">question</span><span class="o">=</span><span class="n">question</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span></span></span><span class="line"><span class="ln" aria-hidden="true">14</span><span class="text"> </span></span><span class="line"><span class="ln" aria-hidden="true">15</span><span class="text">    <span class="n">llm</span> <span class="o">=</span> <span class="n">ChatOpenAI</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-3.5-turbo&quot;</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></span></span><span class="line"><span class="ln" aria-hidden="true">16</span><span class="text">    <span class="n">response</span> <span class="o">=</span> <span class="n">llm</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span></span></span><span class="line"><span class="ln" aria-hidden="true">17</span><span class="text">    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;最终答案：&quot;</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">)</span></span></span><span class="line"><span class="ln" aria-hidden="true">18</span><span class="text">    <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">content</span></span></span><span class="line"><span class="ln" aria-hidden="true">19</span><span class="text"> </span></span><span class="line"><span class="ln" aria-hidden="true">20</span><span class="text"><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span></span></span><span class="line"><span class="ln" aria-hidden="true">21</span><span class="text">    <span class="n">answer_question</span><span class="p">(</span><span class="s2">&quot;2023 年营业收入是多少？&quot;</span><span class="p">,</span> <span class="s2">&quot;data/vector_store&quot;</span><span class="p">)</span></span></span></code></pre></div>
+    </section>
+
+    <section class="question q5" data-question="5" aria-labelledby="title-5">
+      <header class="question-head">
+        <div class="title-row"><span class="number">05</span><h2 id="title-5">提供 FastAPI 接口</h2>
+          <button class="expand" data-only="5" aria-label="仅显示第 5 题" title="仅显示第 5 题">↗</button></div>
+        <p class="summary">请求校验 → POST /qa → 调用问答 → 返回 JSON</p>
+      </header>
+      <div class="code-area"><pre class="code" aria-label="第 5 题完整 Python 代码"><code><span class="line"><span class="ln" aria-hidden="true">01</span><span class="text"><span class="kn">from</span><span class="w"> </span><span class="nn">fastapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">FastAPI</span></span></span><span class="line"><span class="ln" aria-hidden="true">02</span><span class="text"><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span></span></span><span class="line"><span class="ln" aria-hidden="true">03</span><span class="text"><span class="kn">from</span><span class="w"> </span><span class="nn">src.qa_chain</span><span class="w"> </span><span class="kn">import</span> <span class="n">answer_question</span>  <span class="c1"># 复用第 4 题的函数</span></span></span><span class="line"><span class="ln" aria-hidden="true">04</span><span class="text"> </span></span><span class="line"><span class="ln" aria-hidden="true">05</span><span class="text"><span class="n">app</span> <span class="o">=</span> <span class="n">FastAPI</span><span class="p">()</span></span></span><span class="line"><span class="ln" aria-hidden="true">06</span><span class="text"> </span></span><span class="line"><span class="ln" aria-hidden="true">07</span><span class="text"><span class="k">class</span><span class="w"> </span><span class="nc">QARequest</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span></span></span><span class="line"><span class="ln" aria-hidden="true">08</span><span class="text">    <span class="n">question</span><span class="p">:</span> <span class="nb">str</span></span></span><span class="line"><span class="ln" aria-hidden="true">09</span><span class="text"> </span></span><span class="line"><span class="ln" aria-hidden="true">10</span><span class="text"><span class="nd">@app</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/qa&quot;</span><span class="p">)</span></span></span><span class="line"><span class="ln" aria-hidden="true">11</span><span class="text"><span class="k">def</span><span class="w"> </span><span class="nf">qa_endpoint</span><span class="p">(</span><span class="n">req</span><span class="p">:</span> <span class="n">QARequest</span><span class="p">):</span></span></span><span class="line"><span class="ln" aria-hidden="true">12</span><span class="text">    <span class="n">answer</span> <span class="o">=</span> <span class="n">answer_question</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">question</span><span class="p">,</span> <span class="s2">&quot;data/vector_store&quot;</span><span class="p">)</span></span></span><span class="line"><span class="ln" aria-hidden="true">13</span><span class="text">    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;question&quot;</span><span class="p">:</span> <span class="n">req</span><span class="o">.</span><span class="n">question</span><span class="p">,</span> <span class="s2">&quot;answer&quot;</span><span class="p">:</span> <span class="n">answer</span><span class="p">}</span></span></span><span class="line"><span class="ln" aria-hidden="true">14</span><span class="text"> </span></span><span class="line"><span class="ln" aria-hidden="true">15</span><span class="text"><span class="c1"># 运行命令：</span></span></span><span class="line"><span class="ln" aria-hidden="true">16</span><span class="text"><span class="c1"># uvicorn src.app:app --reload --port 8000</span></span></span></code></pre></div>
+    </section></div>
+  <footer class="footer">
+    <span><strong>配置 → 索引 → 检索 → 问答 → 接口</strong></span>
+    <span class="legend"><span>关键字</span><span>函数 / 类</span><span>字符串</span><span>注释</span></span>
+    <span><kbd>1–5</kbd> 多选 / 取消 · <kbd>0 / Esc</kbd> 显示全部 · <kbd>F</kbd> 全屏</span>
+  </footer>
+</main>
+<div class="notice" id="notice" role="status" hidden></div>
+<script>
+(() => {
+  'use strict';
+  const board = document.getElementById('board');
+  const questions = [...document.querySelectorAll('.question')];
+  const fullscreen = document.getElementById('fullscreen');
+  const selected = new Set();
+  let queued = false;
+  let noticeTimer;
+  function fit() {
+    queued = false;
+    const scale = Math.max(.7, Math.min(innerWidth / 1920, innerHeight / 1080));
+    document.documentElement.style.setProperty('--ui', scale + 'px');
+    questions.forEach(card => {
+      if (getComputedStyle(card).display === 'none') return;
+      const area = card.querySelector('.code-area');
+      const code = card.querySelector('.code');
+      const style = getComputedStyle(area);
+      const availableW = area.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+      const availableH = area.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+      code.style.fontSize = '20px';
+      const rect = code.getBoundingClientRect();
+      const size = Math.min(availableW / rect.width, availableH / rect.height) * 20;
+      // Leave a small rounding allowance so the last character/line stays visible.
+      code.style.fontSize = Math.max(1, Math.floor(size * .985 * 10) / 10) + 'px';
+    });
+  }
+  function scheduleFit() {
+    if (!queued) { queued = true; requestAnimationFrame(fit); }
+  }
+  function renderSelection() {
+    board.dataset.count = String(selected.size || questions.length);
+    questions.forEach(card => {
+      card.hidden = selected.size > 0 && !selected.has(Number(card.dataset.question));
+    });
+    document.querySelectorAll('.view').forEach(button => {
+      const number = Number(button.dataset.focus);
+      const pressed = number === 0 ? selected.size === 0 || selected.size === questions.length : selected.has(number);
+      button.setAttribute('aria-pressed', String(pressed));
+      button.title = number === 0 ? '显示全部题目（0 / Esc）' : `${pressed ? '取消选择' : '选择'}第 ${number} 题（可多选）`;
+    });
+    scheduleFit();
+  }
+  function toggleQuestion(number) {
+    if (number === 0) selected.clear();
+    else if (selected.has(number)) selected.delete(number);
+    else selected.add(number);
+    renderSelection();
+  }
+  function showOnly(number) {
+    selected.clear();
+    selected.add(number);
+    renderSelection();
+  }
+  function notify(text) {
+    const notice = document.getElementById('notice');
+    clearTimeout(noticeTimer);
+    notice.textContent = text;
+    notice.hidden = false;
+    noticeTimer = setTimeout(() => { notice.hidden = true; }, 3500);
+  }
+  async function toggleFullscreen() {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else if (document.documentElement.requestFullscreen) await document.documentElement.requestFullscreen();
+      else notify('请按浏览器 F11 键进入全屏');
+    } catch (_) { notify('请按浏览器 F11 键进入全屏'); }
+  }
+  document.querySelectorAll('[data-focus]').forEach(button => {
+    button.addEventListener('click', () => toggleQuestion(Number(button.dataset.focus)));
+  });
+  document.querySelectorAll('[data-only]').forEach(button => {
+    button.addEventListener('click', () => showOnly(Number(button.dataset.only)));
+  });
+  fullscreen.addEventListener('click', toggleFullscreen);
+  document.addEventListener('fullscreenchange', () => {
+    fullscreen.innerHTML = document.fullscreenElement ? '退出全屏 <kbd>F</kbd>' : '全屏 <kbd>F</kbd>';
+    scheduleFit();
+  });
+  document.addEventListener('keydown', event => {
+    if (event.ctrlKey || event.metaKey || event.altKey || event.repeat) return;
+    if (/^[0-5]$/.test(event.key)) { event.preventDefault(); toggleQuestion(Number(event.key)); }
+    else if (event.key === 'Escape') toggleQuestion(0);
+    else if (event.key.toLowerCase() === 'f') { event.preventDefault(); toggleFullscreen(); }
+    else if (selected.size === 1 && (event.key === 'ArrowRight' || event.key === 'ArrowLeft')) {
+      event.preventDefault();
+      const current = [...selected][0];
+      showOnly((current - 1 + (event.key === 'ArrowRight' ? 1 : 4)) % 5 + 1);
+    }
+  });
+  addEventListener('resize', scheduleFit);
+  document.fonts.ready.then(scheduleFit);
+  renderSelection();
+})();
+</script>
+</body>
+</html>
